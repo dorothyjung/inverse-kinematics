@@ -28,8 +28,10 @@
 #include <stdlib.h>
 
 #include "utils.h"
+#include "arm.h"
 
 #define PI 3.14159265  // Should be used from mathlib
+
 inline float sqr(float x) { return x*x; }
 using namespace std;
 
@@ -54,6 +56,7 @@ float phi = 0.0f;
 
 float bb_max = -1*FLT_MAX;
 float z_max = -1*FLT_MAX;
+Arm ARM;
 
 
 //****************************************************
@@ -71,7 +74,7 @@ void initScene(){
 	GLfloat ambient[] = {0.3, 0.3, 0.3, 1.0};
 	GLfloat diffuse[] = {1.0, 1.0, 1.0, 1.0};
 	GLfloat specular[] = {1.0, 1.0, 1.0, 1.0}; 
-	GLfloat position[] = {0.0, 0.0, 100.0, 1.0};
+	GLfloat position[] = {500.0, 500.0, 100.0, 1.0};
 	GLfloat twoside[] = {1.0};
 
 	glFrontFace(GL_CW);
@@ -108,23 +111,76 @@ void myReshape(int w, int h) {
 //***************************************************
 void drawSurface() {
 
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	glBegin(GL_POLYGON);						// draw ground
+	glVertex3f(-1000.0f,1000.0f,0.0f);
+    glVertex3f(1000.0f,1000.0f,0.0f);
+    glVertex3f(1000.0f,-1000.0f,0.0f);
+    glVertex3f(-1000.0f,-1000.0f,0.0f);
+	glEnd();
+
 	GLUquadric* quad = gluNewQuadric();
 	gluQuadricNormals(quad, GLU_SMOOTH);
 	gluQuadricTexture(quad, GL_TRUE);
 
-	float radius = 100.0f;
-	int slices = 10;
-	int stacks = 10;
+	int slices = 20;
+	int stacks = 20;
+	float radius = 1.0f;
+	float base = 0.5f;
+	float top = 0.5f;
 
 	gluSphere(quad, radius, slices, stacks);
-
-	float base = 100.0f;
-	float top = 20.0f;
-	float height = 300.0f;
-
-	gluCylinder(quad, base, top, height, slices, stacks);
-	// glEnd();
+	gluCylinder(quad, base, top, LEN1, slices, stacks);
 	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	glTranslatef(0,0,LEN1);
+	gluSphere(quad, radius, slices, stacks);
+	gluCylinder(quad, base, top, LEN2, slices, stacks);
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	glTranslatef(0,0,LEN1+LEN2);
+	gluSphere(quad, radius, slices, stacks);
+	gluCylinder(quad, base, top, LEN3, slices, stacks);
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	glTranslatef(0,0,LEN1+LEN2+LEN3);
+	gluSphere(quad, radius, slices, stacks);
+	gluCylinder(quad, base, top, LEN4, slices, stacks);
+	glPopMatrix();
+	
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	glTranslatef(0,0,LEN1+LEN2+LEN3+LEN4);
+	gluSphere(quad, 0.75, slices, stacks);
+	glPopMatrix();
+
 }
 
 //****************************************************
@@ -139,17 +195,11 @@ void myDisplay() {
 	gluPerspective(60, viewport.w/viewport.h, 1, FLT_MAX);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);			// clear the color buffer
-	gluLookAt(0, 0, 500, 0, 0, 0, 0, 1, 0);
+	gluLookAt(0, 0, 30, 0, 0, 0, 0, 1, 0);
 	// gluLookAt(0, 0, 2*bb_max*sqrt(3)+z_trans, 0, 0, 0, 0, 1, 0);
 
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
+	
 	//start drawing
 	drawSurface();
 
@@ -238,28 +288,28 @@ void trans_modes(int key, int x, int y){
  		}	
 
  	//implement some other functionality (besides translations) for shift+arrow keys
- 	// } else {
- 	// 	switch(key){
- 	// 		// translate left
- 	// 		case GLUT_KEY_LEFT:
- 	// 			x_trans -= 1;
-		// 		break;
+ 	} else {
+ 		switch(key){
+ 			// translate left
+ 			case GLUT_KEY_LEFT:
+ 				x_trans -= 1;
+		 		break;
 
- 	// 		// translate right
- 	// 		case GLUT_KEY_RIGHT:
-		// 		x_trans += 1;
-		// 		break;
+ 	 		// translate right
+ 	 		case GLUT_KEY_RIGHT:
+		 		x_trans += 1;
+		 		break;
 
-		// 	// translate up
-		// 	case GLUT_KEY_UP:
-		// 		y_trans += 1;
-		// 		break;
+		 	// translate up
+		 	case GLUT_KEY_UP:
+		 		y_trans += 1;
+		 		break;
 
-		// 	// translate down
-		// 	case GLUT_KEY_DOWN:
-		// 		y_trans -= 1;
-		// 		break;
- 	// 	}
+		 	// translate down
+		 	case GLUT_KEY_DOWN:
+		 		y_trans -= 1;
+		 		break;
+ 	 	}
  	}
 	glutPostRedisplay();
 }
@@ -269,33 +319,11 @@ void trans_modes(int key, int x, int y){
 //**************************************************** 
 int main(int argc, char *argv[]) {
 
-	char* infile = NULL;
+	//initialize arm
+	Eigen::VectorXf angles(12);
+	angles << 0, 0, 0,   0, 0, 0,   0, 0, 0,   0, 0, 0; 
 
-	// if(argc > 1) {
-	//   	try {
-	//   		infile = argv[1];
-	// 		subdiv_param = strtof(argv[2],0);
-
-	// 		int i = 3;
-	// 		while(i < argc) {
-	// 			char* arg = argv[i];
-	// 			if(strcmp(arg, ADAPT_FLAG) == 0){
-	// 				isAdaptive = true;
-	// 				i++;
-	// 			} else {
-	// 				throw 2;
-	// 			}
-	// 		}
-	// 	} catch(int e) {
-	// 		if(e == 2){
-	// 			cout << "Unrecognized command. Program Aborted. " << endl;
-	// 			exit(1);
-	// 		} else {
-	// 			cout << "Error in input arguments. Program Aborted. " << endl;
-	// 			exit(1);
-	// 		}
-	//   }
-	// }
+	ARM = Arm(angles);
 
 	//This initializes glut
 	glutInit(&argc, argv);
