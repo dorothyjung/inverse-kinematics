@@ -77,5 +77,98 @@ MatrixXf Arm::computeJacobian(){
 				dpdx1[2], dpdy1[2], dpdz1[2], dpdx2[2], dpdy2[2], dpdz2[2], dpdx3[2], dpdy3[2], dpdz3[2], dpdx4[2], dpdy4[2], dpdz4[2];
 
 	return jacobian;
-	
+
+}
+
+void Arm::updateArm(MatrixXf jacobian){
+
+	Matrix3f rx;
+	Matrix3f ry;
+	Matrix3f rz;
+	float dt;
+
+	// Compute J-inverse
+	// J-inverse * dp = dtheta
+
+	// Update theta vector in state
+	theta = theta + dtheta;
+
+	// Update first segment
+	dt = dtheta[0];
+	rx << 	1.0,  		0.0,		0.0,
+			0.0,		cos(dt),	sin(dt),
+			0.0,		sin(dt), 	cos(dt);
+
+	dt = dtheta[1];
+	ry <<	cos(dt),	0.0,		-sin(dt),
+			0.0,		1.0,		0.0, 
+			sin(dt),	0.0,		cos(dt);
+
+	dt = dtheta[2];
+	rz <<	cos(dt),	sin(dt),	0.0,
+			-sin(dt),	cos(dt),	0.0,
+			0.0,		0.0,		1.0;
+
+	Vector3f nv1 = (rz*ry*rx)*endpt[0]; 
+
+	// Update second segment
+	dt = dtheta[3];
+	rx << 	1.0,  		0.0,		0.0,
+			0.0,		cos(dt),	sin(dt),
+			0.0,		sin(dt), 	cos(dt);
+
+	dt = dtheta[4];
+	ry <<	cos(dt),	0.0,		-sin(dt),
+			0.0,		1.0,		0.0, 
+			sin(dt),	0.0,		cos(dt);
+
+	dt = dtheta[5];
+	rz <<	cos(dt),	sin(dt),	0.0,
+			-sin(dt),	cos(dt),	0.0,
+			0.0,		0.0,		1.0;
+
+	Vector3f nv2 = (rz*ry*rx)*(endpt[1]-endpt[0])+endpt[0]; 
+
+	// Update third segment
+	dt = dtheta[6];
+	rx << 	1.0,  		0.0,		0.0,
+			0.0,		cos(dt),	sin(dt),
+			0.0,		sin(dt), 	cos(dt);
+
+	dt = dtheta[7];
+	ry <<	cos(dt),	0.0,		-sin(dt),
+			0.0,		1.0,		0.0, 
+			sin(dt),	0.0,		cos(dt);
+
+	dt = dtheta[8];
+	rz <<	cos(dt),	sin(dt),	0.0,
+			-sin(dt),	cos(dt),	0.0,
+			0.0,		0.0,		1.0;
+
+	Vector3f nv3 = (rz*ry*rx)*(endpt[2]-endpt[1])+endpt[1]; 
+
+	// Update fourth segment
+	dt = dtheta[9];
+	rx << 	1.0,  		0.0,		0.0,
+			0.0,		cos(dt),	sin(dt),
+			0.0,		sin(dt), 	cos(dt);
+
+	dt = dtheta[10];
+	ry <<	cos(dt),	0.0,		-sin(dt),
+			0.0,		1.0,		0.0, 
+			sin(dt),	0.0,		cos(dt);
+
+	dt = dtheta[11];
+	rz <<	cos(dt),	sin(dt),	0.0,
+			-sin(dt),	cos(dt),	0.0,
+			0.0,		0.0,		1.0;
+
+	Vector3f nv4 = (rz*ry*rx)*(endpt[3]-endpt[2])+endpt[2];
+
+	endpt.clear();
+	endpt.pushback(nv1);
+	endpt.pushback(nv2);
+	endpt.pushback(nv3);
+	endpt.pushback(nv4); 
+
 }
