@@ -11,22 +11,36 @@
 using namespace std;
 using namespace Eigen;
 
+//****************************************************
+// Global variables
+//****************************************************
 float dt = 0.1f;
 Matrix3f rot_x;
 Matrix3f rot_y;
 Matrix3f rot_z;
 
-rot_x << 	1.0,  		0.0,		0.0,
-			0.0,		cos(dt),	sin(dt),
-			0.0,		sin(dt), 	cos(dt);
+//****************************************************
+// Initialize rotation matrices
+//****************************************************
+void initRotationMatrices() {
+	rot_x << 	1.0,  		0.0,		0.0,
+				0.0,		cos(dt),	sin(dt),
+				0.0,		sin(dt), 	cos(dt);
 
-rot_y <<	cos(dt),	0.0,		-sin(dt),
-			0.0,		1.0,		0.0, 
-			sin(dt),	0.0,		cos(dt);
+	rot_y <<	cos(dt),	0.0,		-sin(dt),
+				0.0,		1.0,		0.0, 
+				sin(dt),	0.0,		cos(dt);
 
-rot_z <<	cos(dt),	sin(dt),	0.0,
-			-sin(dt),	cos(dt),	0.0,
-			0.0,		0.0,		1.0;
+	rot_z <<	cos(dt),	sin(dt),	0.0,
+				-sin(dt),	cos(dt),	0.0,
+				0.0,		0.0,		1.0;
+
+}
+
+//****************************************************
+// Creates and stores information about a 4-segment
+// arm
+//****************************************************
 
 Arm::Arm(Eigen::VectorXf t){
 	// Stores the current state of the arm
@@ -40,15 +54,18 @@ Arm::Arm(Eigen::VectorXf t){
 	Eigen::Vector3f endseg3(0,0,LEN1+LEN2+LEN3);
 	Eigen::Vector3f endseg4(0,0,LEN1+LEN2+LEN3+LEN4);
 
-	endpt.pushback(endseg1);
-	endpt.pushback(endseg2);
-	endpt.pushback(endseg3);
-	endpt.pushback(endseg4);
+	endpt.push_back(endseg1);
+	endpt.push_back(endseg2);
+	endpt.push_back(endseg3);
+	endpt.push_back(endseg4);
+
 }
 
+//****************************************************
+// Numerically compute Jacobian matrix based on
+// current arm position
+//****************************************************
 MatrixXf Arm::computeJacobian(){
-
-	// Numerically compute Jacobian matrix based on current arm position
 	
 	// theta-xyz-1
 	Vector3f dpdx1 = (1.0/dt)*((rot_x*endpt[3])-endpt[3]);
@@ -88,7 +105,11 @@ void Arm::updateArm(MatrixXf jacobian){
 	float dt;
 
 	// Compute J-inverse
-	// J-inverse * dp = dtheta
+	// dtheta = J-inverse * dp
+	VectorXf dp(3);
+
+	JacobiSVD<MatrixXf> svd(jacobian, ComputeThinU | ComputeThinV);
+	VectorXf dtheta = svd.solve(dp); //FIX vector dp
 
 	// Update theta vector in state
 	theta = theta + dtheta;
@@ -166,9 +187,9 @@ void Arm::updateArm(MatrixXf jacobian){
 	Vector3f nv4 = (rz*ry*rx)*(endpt[3]-endpt[2])+endpt[2];
 
 	endpt.clear();
-	endpt.pushback(nv1);
-	endpt.pushback(nv2);
-	endpt.pushback(nv3);
-	endpt.pushback(nv4); 
+	endpt.push_back(nv1);
+	endpt.push_back(nv2);
+	endpt.push_back(nv3);
+	endpt.push_back(nv4); 
 
 }

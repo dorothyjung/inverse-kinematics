@@ -1,3 +1,9 @@
+#ifndef EIGEN
+#define EIGEN
+#include <Eigen/Dense>
+#include <Eigen/SVD>
+#endif
+
 #include <vector>
 #include <iostream>
 #include <sstream>
@@ -27,7 +33,6 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include "utils.h"
 #include "arm.h"
 
 #define PI 3.14159265  // Should be used from mathlib
@@ -321,9 +326,13 @@ int main(int argc, char *argv[]) {
 
 	//initialize arm
 	Eigen::VectorXf angles(12);
-	angles << 0, 0, 0,   0, 0, 0,   0, 0, 0,   0, 0, 0; 
+	angles << 0, 0, 0,
+			  0, 0, 0,
+			  0, 0, 0,
+			  0, 0, 0; 
 
 	ARM = Arm(angles);
+	initRotationMatrices();
 
 	//This initializes glut
 	glutInit(&argc, argv);
