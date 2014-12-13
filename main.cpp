@@ -263,8 +263,7 @@ void myDisplay() {
 }
 
 //****************************************************
-// 's': program toggles between flat/smooth shading
-// 'w': program toggles between filled/wireframe
+// 'n': starts and stops animation
 // +/- keys: zoom in/ out
 // Exit when spacebar is pressed
 //*****************************************************
@@ -351,7 +350,6 @@ void trans_modes(int key, int x, int y){
 				break;
  		}	
 
- 	//implement some other functionality (besides translations) for shift+arrow keys
  	} else {
  		switch(key){
  			// translate left
