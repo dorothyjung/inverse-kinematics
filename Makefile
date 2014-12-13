@@ -1,6 +1,6 @@
 CC = g++
 INCLUDE = -I ./eigen2
-OBJS = main.o arm.o
+OBJS = main.o arm.o path.o
 
 ifeq ($(shell sw_vers 2>/dev/null | grep Mac | awk '{ print $$2}'),Mac)
 	CFLAGS = -g -DGL_GLEXT_PROTOTYPES -I./include/ -I/usr/X11/include -DOSX $(INCLUDE)
@@ -16,9 +16,11 @@ RM = /bin/rm -f
 all: main 
 main: $(OBJS)
 	$(CC) $(CFLAGS) -o as4 $(OBJS) $(LDFLAGS) 
-main.o: main.cpp arm.h
+main.o: main.cpp arm.h path.h
 	$(CC) $(CFLAGS) -c main.cpp -o main.o
 arm.o: arm.h
 	$(CC) $(CFLAGS) -c arm.cpp -o arm.o
+path.o: path.h
+	$(CC) $(CFLAGS) -c path.cpp -o path.o
 clean: 
 	$(RM) *.o as4 *.png *.out

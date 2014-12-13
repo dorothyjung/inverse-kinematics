@@ -34,6 +34,7 @@
 #include <stdlib.h>
 
 #include "arm.h"
+#include "path.h"
 
 #define PI 3.14159265  // Should be used from mathlib
 
@@ -61,7 +62,8 @@ float phi = 0.0f;
 
 float bb_max = -1*FLT_MAX;
 float z_max = -1*FLT_MAX;
-Arm ARM;
+Arm arm;
+Path path;
 
 
 //****************************************************
@@ -112,9 +114,9 @@ void myReshape(int w, int h) {
 }
 
 //****************************************************
-// calls functions to interpolate and sets pixel
+// calls functions to draw initial configuration
 //***************************************************
-void drawSurface() {
+void initSurface() {
 
 	glPushMatrix();
 	glLoadIdentity();							// make sure transformation is "zero'd"
@@ -189,6 +191,33 @@ void drawSurface() {
 }
 
 //****************************************************
+// calls functions to draw current arm configuration
+//***************************************************
+void drawArm() {
+	//do stuff here, similar to above
+}
+
+//****************************************************
+// calls functions to interpolate and sets pixel
+//***************************************************
+void drawSurface() {
+
+	initSurface();
+
+	if (path.getPath()) {
+
+		VectorXf target = path.getPath();
+
+		//relate target and arm
+		
+		arm.updateArm(arm.computeJacobian());
+
+		drawArm();
+	}
+
+}
+
+//****************************************************
 // function that does the actual drawing of stuff
 //***************************************************
 void myDisplay() {
@@ -204,7 +233,7 @@ void myDisplay() {
 	// gluLookAt(0, 0, 2*bb_max*sqrt(3)+z_trans, 0, 0, 0, 0, 1, 0);
 
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
-	
+
 	//start drawing
 	drawSurface();
 
@@ -331,8 +360,9 @@ int main(int argc, char *argv[]) {
 			  0, 0, 0,
 			  0, 0, 0; 
 
-	ARM = Arm(angles);
+	arm = Arm(angles);
 	initRotationMatrices();
+	initPath();
 
 	//This initializes glut
 	glutInit(&argc, argv);
