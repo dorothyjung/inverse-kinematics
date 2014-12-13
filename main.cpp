@@ -62,8 +62,16 @@ float phi = 0.0f;
 
 float bb_max = -1*FLT_MAX;
 float z_max = -1*FLT_MAX;
-Arm arm;
-Path path;
+
+
+Arm ARM;
+int t = 1;
+float y = 0.0;
+float z = 0.0;
+bool animate = 0;
+MatrixXf currJ;
+Vector3f nextpt;
+
 
 
 //****************************************************
@@ -81,7 +89,7 @@ void initScene(){
 	GLfloat ambient[] = {0.3, 0.3, 0.3, 1.0};
 	GLfloat diffuse[] = {1.0, 1.0, 1.0, 1.0};
 	GLfloat specular[] = {1.0, 1.0, 1.0, 1.0}; 
-	GLfloat position[] = {500.0, 500.0, 100.0, 1.0};
+	GLfloat position[] = {0.0, 0.0, -100.0, 1.0};
 	GLfloat twoside[] = {1.0};
 
 	glFrontFace(GL_CW);
@@ -114,9 +122,9 @@ void myReshape(int w, int h) {
 }
 
 //****************************************************
-// calls functions to draw initial configuration
+// calls functions to draw current arm configuration
 //***************************************************
-void initSurface() {
+void drawArm() {
 
 	glPushMatrix();
 	glLoadIdentity();							// make sure transformation is "zero'd"
@@ -142,6 +150,9 @@ void initSurface() {
 	float top = 0.5f;
 
 	gluSphere(quad, radius, slices, stacks);
+	glRotatef(ARM.theta[0],1,0,0);
+	glRotatef(ARM.theta[1],0,1,0);
+	glRotatef(ARM.theta[2],0,0,1);
 	gluCylinder(quad, base, top, LEN1, slices, stacks);
 	glPopMatrix();
 
@@ -151,7 +162,11 @@ void initSurface() {
 	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
-	glTranslatef(0,0,LEN1);
+	//glTranslatef(-1.0*((ARM.endpt[0])[0]),-1.0*((ARM.endpt[0])[1]),-1.0*((ARM.endpt[0])[2]));
+	glRotatef(ARM.theta[3],1,0,0);
+	glRotatef(ARM.theta[4],0,1,0);
+	glRotatef(ARM.theta[5],0,0,1);
+	glTranslatef(((ARM.endpt[0])[0]),((ARM.endpt[0])[1]),((ARM.endpt[0])[2]));
 	gluSphere(quad, radius, slices, stacks);
 	gluCylinder(quad, base, top, LEN2, slices, stacks);
 	glPopMatrix();
@@ -162,7 +177,11 @@ void initSurface() {
 	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
-	glTranslatef(0,0,LEN1+LEN2);
+	//glTranslatef(-1.0*((ARM.endpt[1])[0]),-1.0*((ARM.endpt[1])[1]),-1.0*((ARM.endpt[1])[2]));
+	glRotatef(ARM.theta[6],1,0,0);
+	glRotatef(ARM.theta[7],0,1,0);
+	glRotatef(ARM.theta[8],0,0,1);
+	glTranslatef(((ARM.endpt[1])[0]),((ARM.endpt[1])[1]),((ARM.endpt[1])[2]));
 	gluSphere(quad, radius, slices, stacks);
 	gluCylinder(quad, base, top, LEN3, slices, stacks);
 	glPopMatrix();
@@ -173,7 +192,11 @@ void initSurface() {
 	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
-	glTranslatef(0,0,LEN1+LEN2+LEN3);
+	//glTranslatef(-1.0*((ARM.endpt[2])[0]),-1.0*((ARM.endpt[2])[1]),-1.0*((ARM.endpt[2])[2]));
+	glRotatef(ARM.theta[9],1,0,0);
+	glRotatef(ARM.theta[10],0,1,0);
+	glRotatef(ARM.theta[11],0,0,1);
+	glTranslatef(((ARM.endpt[2])[0]),((ARM.endpt[2])[1]),((ARM.endpt[2])[2]));
 	gluSphere(quad, radius, slices, stacks);
 	gluCylinder(quad, base, top, LEN4, slices, stacks);
 	glPopMatrix();
@@ -184,41 +207,33 @@ void initSurface() {
 	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
-	glTranslatef(0,0,LEN1+LEN2+LEN3+LEN4);
+	glTranslatef(((ARM.endpt[3])[0]),((ARM.endpt[3])[1]),((ARM.endpt[3])[2]));
 	gluSphere(quad, 0.75, slices, stacks);
 	glPopMatrix();
 
 }
 
 //****************************************************
-// calls functions to draw current arm configuration
-//***************************************************
-void drawArm() {
-	//do stuff here, similar to above
-}
-
-//****************************************************
-// calls functions to interpolate and sets pixel
+// function that recalculates Jacobian
 //***************************************************
 void drawSurface() {
 
-	initSurface();
+	y = t*0.1f;
+	z = floor(sqrt(sqr(14.0)-sqr(y)));
+	nextpt << 0.0, y, z;
 
-	if (path.getPath()) {
+	currJ = ARM.computeJacobian();
+	ARM.updateArm(currJ,nextpt);
+	drawArm();
 
-		VectorXf target = path.getPath();
-
-		//relate target and arm
-		
-		arm.updateArm(arm.computeJacobian());
-
-		drawArm();
+	t++;
+	if(t > 10){
+		t = 0;
 	}
-
 }
 
 //****************************************************
-// function that does the actual drawing of stuff
+// function called by openGL, does actual drawing
 //***************************************************
 void myDisplay() {
 
@@ -235,7 +250,13 @@ void myDisplay() {
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
 
 	//start drawing
-	drawSurface();
+	if (animate) {
+		drawSurface();
+	} else {
+		drawArm();
+	}
+
+	glutPostRedisplay();
 
 	glFlush();
 	glutSwapBuffers();					// swap buffers (we earlier set double buffer)
@@ -266,6 +287,15 @@ void key_modes(unsigned char key, int x, int y){
 			glutPostRedisplay();
 			break;
 
+		// 'n' to start animation
+		case 110:
+			if (animate) {
+				animate = 0;
+			} else {
+				animate = 1;
+			}
+			break;
+	
 	 	// space bar
 		case 32:
 	 		exit(0);
@@ -355,14 +385,11 @@ int main(int argc, char *argv[]) {
 
 	//initialize arm
 	Eigen::VectorXf angles(12);
-	angles << 0, 0, 0,
-			  0, 0, 0,
-			  0, 0, 0,
-			  0, 0, 0; 
+	angles << 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0; 
 
-	arm = Arm(angles);
+	ARM = Arm(angles);
 	initRotationMatrices();
-	initPath();
+	// initPath();
 
 	//This initializes glut
 	glutInit(&argc, argv);

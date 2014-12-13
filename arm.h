@@ -38,7 +38,7 @@ class Arm {
 	Arm(Eigen::VectorXf);
 	
 	Eigen::MatrixXf computeJacobian();
-	void updateArm(MatrixXf);
+	void updateArm(MatrixXf, Vector3f);
 
 	Eigen::VectorXf theta;
 	vector<Eigen::Vector3f> endpt;

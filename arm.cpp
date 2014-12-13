@@ -14,7 +14,7 @@ using namespace Eigen;
 //****************************************************
 // Global variables
 //****************************************************
-float dt = 0.1f;
+float dt = 1.0f;
 Matrix3f rot_x;
 Matrix3f rot_y;
 Matrix3f rot_z;
@@ -97,7 +97,7 @@ MatrixXf Arm::computeJacobian(){
 
 }
 
-void Arm::updateArm(MatrixXf jacobian){
+void Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 
 	Matrix3f rx;
 	Matrix3f ry;
@@ -106,7 +106,7 @@ void Arm::updateArm(MatrixXf jacobian){
 
 	// Compute J-inverse
 	// dtheta = J-inverse * dp
-	VectorXf dp(3);
+	Vector3f dp = goal - endpt[3];
 
 	JacobiSVD<MatrixXf> svd(jacobian, ComputeThinU | ComputeThinV);
 	VectorXf dtheta = svd.solve(dp); //FIX vector dp
