@@ -1,4 +1,5 @@
 #include <cmath>
+#include <iostream>
 #include <algorithm>
 #include <math.h>
 #include <string>
@@ -24,15 +25,15 @@ Matrix3f rot_z;
 //****************************************************
 void initRotationMatrices() {
 	rot_x << 	1.0,  		0.0,		0.0,
-				0.0,		cos(dt),	sin(dt),
+				0.0,		cos(dt),    -sin(dt),
 				0.0,		sin(dt), 	cos(dt);
 
-	rot_y <<	cos(dt),	0.0,		-sin(dt),
+	rot_y <<	cos(dt),	0.0,		sin(dt),
 				0.0,		1.0,		0.0, 
-				sin(dt),	0.0,		cos(dt);
+				-sin(dt),	0.0,		cos(dt);
 
-	rot_z <<	cos(dt),	sin(dt),	0.0,
-				-sin(dt),	cos(dt),	0.0,
+	rot_z <<	cos(dt),	-sin(dt),	0.0,
+				sin(dt),	cos(dt),	0.0,
 				0.0,		0.0,		1.0;
 
 }
@@ -93,6 +94,24 @@ MatrixXf Arm::computeJacobian(){
 				dpdx1[1], dpdy1[1], dpdz1[1], dpdx2[1], dpdy2[1], dpdz2[1], dpdx3[1], dpdy3[1], dpdz3[1], dpdx4[1], dpdy4[1], dpdz4[1],
 				dpdx1[2], dpdy1[2], dpdz1[2], dpdx2[2], dpdy2[2], dpdz2[2], dpdx3[2], dpdy3[2], dpdz3[2], dpdx4[2], dpdy4[2], dpdz4[2];
 
+	// cout << "End point:" << endl;
+	// cout << endpt[3][0] << " " << endpt[3][1] << " " << endpt[3][2] << endl;
+	// cout << "Jacobian columns:" << endl;
+	// cout << dpdx1[0] << " " << dpdx1[1] << " " << dpdx1[2] << endl;
+	// cout << dpdy1[0] << " " << dpdy1[1] << " " << dpdy1[2] << endl;
+	// cout << dpdz1[0] << " " << dpdz1[1] << " " << dpdz1[2] << endl;
+	
+	// cout << dpdx2[0] << " " << dpdx2[1] << " " << dpdx2[2] << endl;
+	// cout << dpdy2[0] << " " << dpdy2[1] << " " << dpdy2[2] << endl;
+	// cout << dpdz2[0] << " " << dpdz2[1] << " " << dpdz2[2] << endl;
+	
+	// cout << dpdx3[0] << " " << dpdx3[1] << " " << dpdx3[2] << endl;
+	// cout << dpdy3[0] << " " << dpdy3[1] << " " << dpdy3[2] << endl;
+	// cout << dpdz3[0] << " " << dpdz3[1] << " " << dpdz3[2] << endl;
+	
+	// cout << dpdx4[0] << " " << dpdx4[1] << " " << dpdx4[2] << endl;
+	// cout << dpdy4[0] << " " << dpdy4[1] << " " << dpdy4[2] << endl;
+	// cout << dpdz4[0] << " " << dpdz4[1] << " " << dpdz4[2] << endl;
 	return jacobian;
 
 }
@@ -111,23 +130,25 @@ void Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 	JacobiSVD<MatrixXf> svd(jacobian, ComputeThinU | ComputeThinV);
 	VectorXf dtheta = svd.solve(dp); //FIX vector dp
 
+	cout << dtheta[0] << " " << dtheta[1] << " " << dtheta[2] << " " << dtheta[3] << " " << dtheta[4] << " " << dtheta[5] << " " << dtheta[6] << " " << dtheta[7] << " " << dtheta[8] << " " << dtheta[9] << " " << dtheta[10] << " " << dtheta[11] << endl;
+
 	// Update theta vector in state
 	theta = theta + dtheta;
 
 	// Update first segment
 	dt = dtheta[0];
 	rx << 	1.0,  		0.0,		0.0,
-			0.0,		cos(dt),	sin(dt),
+			0.0,		cos(dt),	-sin(dt),
 			0.0,		sin(dt), 	cos(dt);
 
 	dt = dtheta[1];
-	ry <<	cos(dt),	0.0,		-sin(dt),
+	ry <<	cos(dt),	0.0,		sin(dt),
 			0.0,		1.0,		0.0, 
-			sin(dt),	0.0,		cos(dt);
+			-sin(dt),	0.0,		cos(dt);
 
 	dt = dtheta[2];
-	rz <<	cos(dt),	sin(dt),	0.0,
-			-sin(dt),	cos(dt),	0.0,
+	rz <<	cos(dt),	-sin(dt),	0.0,
+			sin(dt),	cos(dt),	0.0,
 			0.0,		0.0,		1.0;
 
 	Vector3f nv1 = (rz*ry*rx)*endpt[0]; 
@@ -135,17 +156,17 @@ void Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 	// Update second segment
 	dt = dtheta[3];
 	rx << 	1.0,  		0.0,		0.0,
-			0.0,		cos(dt),	sin(dt),
+			0.0,		cos(dt),	-sin(dt),
 			0.0,		sin(dt), 	cos(dt);
 
 	dt = dtheta[4];
-	ry <<	cos(dt),	0.0,		-sin(dt),
+	ry <<	cos(dt),	0.0,		sin(dt),
 			0.0,		1.0,		0.0, 
-			sin(dt),	0.0,		cos(dt);
+			-sin(dt),	0.0,		cos(dt);
 
 	dt = dtheta[5];
-	rz <<	cos(dt),	sin(dt),	0.0,
-			-sin(dt),	cos(dt),	0.0,
+	rz <<	cos(dt),	-sin(dt),	0.0,
+			sin(dt),	cos(dt),	0.0,
 			0.0,		0.0,		1.0;
 
 	Vector3f nv2 = (rz*ry*rx)*(endpt[1]-endpt[0])+endpt[0]; 
@@ -153,17 +174,17 @@ void Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 	// Update third segment
 	dt = dtheta[6];
 	rx << 	1.0,  		0.0,		0.0,
-			0.0,		cos(dt),	sin(dt),
+			0.0,		cos(dt),	-sin(dt),
 			0.0,		sin(dt), 	cos(dt);
 
 	dt = dtheta[7];
-	ry <<	cos(dt),	0.0,		-sin(dt),
+	ry <<	cos(dt),	0.0,		sin(dt),
 			0.0,		1.0,		0.0, 
-			sin(dt),	0.0,		cos(dt);
+			-sin(dt),	0.0,		cos(dt);
 
 	dt = dtheta[8];
-	rz <<	cos(dt),	sin(dt),	0.0,
-			-sin(dt),	cos(dt),	0.0,
+	rz <<	cos(dt),	-sin(dt),	0.0,
+			sin(dt),	cos(dt),	0.0,
 			0.0,		0.0,		1.0;
 
 	Vector3f nv3 = (rz*ry*rx)*(endpt[2]-endpt[1])+endpt[1]; 
@@ -171,17 +192,17 @@ void Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 	// Update fourth segment
 	dt = dtheta[9];
 	rx << 	1.0,  		0.0,		0.0,
-			0.0,		cos(dt),	sin(dt),
+			0.0,		cos(dt),	-sin(dt),
 			0.0,		sin(dt), 	cos(dt);
 
 	dt = dtheta[10];
-	ry <<	cos(dt),	0.0,		-sin(dt),
+	ry <<	cos(dt),	0.0,		sin(dt),
 			0.0,		1.0,		0.0, 
-			sin(dt),	0.0,		cos(dt);
+			-sin(dt),	0.0,		cos(dt);
 
 	dt = dtheta[11];
-	rz <<	cos(dt),	sin(dt),	0.0,
-			-sin(dt),	cos(dt),	0.0,
+	rz <<	cos(dt),	-sin(dt),	0.0,
+			sin(dt),	cos(dt),	0.0,
 			0.0,		0.0,		1.0;
 
 	Vector3f nv4 = (rz*ry*rx)*(endpt[3]-endpt[2])+endpt[2];

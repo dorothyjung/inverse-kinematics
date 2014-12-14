@@ -34,7 +34,7 @@
 #include <stdlib.h>
 
 #include "arm.h"
-#include "path.h"
+//#include "path.h"
 
 #define PI 3.14159265  // Should be used from mathlib
 
@@ -293,6 +293,14 @@ void key_modes(unsigned char key, int x, int y){
 			} else {
 				animate = 1;
 			}
+			break;
+
+		// 'm' to step one frame
+		case 109:
+			currJ = ARM.computeJacobian();
+			nextpt << 0.0, 0.1, 13.8;
+			ARM.updateArm(currJ,nextpt);
+			drawArm();
 			break;
 	
 	 	// space bar
