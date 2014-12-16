@@ -36,7 +36,7 @@
 #include "arm.h"
 //#include "path.h"
 
-#define PI 3.14159265  // Should be used from mathlib
+//#define PI 3.14159265  // Should be used from mathlib
 
 inline float sqr(float x) { return x*x; }
 using namespace std;
@@ -84,6 +84,7 @@ void initScene(){
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	glEnable(GL_NORMALIZE);
+	glEnable(GL_LINE_SMOOTH);
 	glShadeModel(GL_SMOOTH);
 	
 	GLfloat ambient[] = {0.3, 0.3, 0.3, 1.0};
@@ -126,6 +127,34 @@ void myReshape(int w, int h) {
 //***************************************************
 void drawArm() {
 
+	ARM.theta = (180.0/PI)*ARM.theta;
+	//cout << "THETA IN MAIN 2: " << ARM.theta.transpose() << endl;
+
+	// glBegin(GL_LINES);
+	// glLineWidth(1.0f);
+	// glVertex3f(0.0, 0.0, 0.0);
+	// glVertex3f(ARM.endpt[0][0], ARM.endpt[0][1], ARM.endpt[0][2]);
+	// glEnd();
+
+	// glBegin(GL_LINES);
+	// glLineWidth(1.0f);
+	// glVertex3f(ARM.endpt[0][0], ARM.endpt[0][1], ARM.endpt[0][2]);
+	// glVertex3f(ARM.endpt[1][0], ARM.endpt[1][1], ARM.endpt[1][2]);
+	// glEnd();
+
+	// glBegin(GL_LINES);
+	// glLineWidth(1.0f);
+	// glVertex3f(ARM.endpt[1][0], ARM.endpt[1][1], ARM.endpt[1][2]);
+	// glVertex3f(ARM.endpt[2][0], ARM.endpt[2][1], ARM.endpt[2][2]);
+	// glEnd();
+
+	// glBegin(GL_LINES);
+	// glLineWidth(1.0f);
+	// glVertex3f(ARM.endpt[2][0], ARM.endpt[2][1], ARM.endpt[2][2]);
+	// glVertex3f(ARM.endpt[3][0], ARM.endpt[3][1], ARM.endpt[3][2]);
+	// glEnd();
+
+
 	glPushMatrix();
 	glLoadIdentity();							// make sure transformation is "zero'd"
 	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
@@ -150,10 +179,41 @@ void drawArm() {
 	float top = 0.5f;
 
 	gluSphere(quad, radius, slices, stacks);
-	glRotatef(ARM.theta[0],1,0,0);
-	glRotatef(ARM.theta[1],0,1,0);
-	glRotatef(ARM.theta[2],0,0,1);
-	gluCylinder(quad, base, top, LEN1, slices, stacks);
+	// glRotatef(ARM.theta[2],0,0,1);
+	// glRotatef(ARM.theta[1],0,1,0);
+	// glRotatef(ARM.theta[0],1,0,0);
+	// gluCylinder(quad, base, top, LEN1, slices, stacks);
+
+	// Vector3f endpt0(ARM.endpt[0][0], ARM.endpt[0][1], ARM.endpt[0][2]);
+	// Vector3f endpt1(ARM.endpt[1][0], ARM.endpt[1][1], ARM.endpt[1][2]);
+	// Vector3f endpt2(ARM.endpt[2][0], ARM.endpt[2][1], ARM.endpt[2][2]);
+	// Vector3f endpt3(ARM.endpt[3][0], ARM.endpt[3][1], ARM.endpt[3][2]);
+
+	Vector3f orig(0.0, 0.0, 1.0);
+	Vector3f bot(0.0, 0.0, 0.0);
+	Vector3f endpt0 = ARM.endpt[0];
+	Vector3f endpt1 = ARM.endpt[1];
+	Vector3f endpt2 = ARM.endpt[2];
+	Vector3f endpt3 = ARM.endpt[3];
+	Vector3f seg(0.0, 0.0, 0.0);
+	Vector3f axis_of_rotation(0.0, 0.0, 0.0);
+	float deg_rotate = 0.0f;
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	seg = (endpt0 - bot);
+	axis_of_rotation = orig.cross(seg);
+	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
+	glTranslatef(bot[0], bot[1], bot[2]);
+	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
+	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
+
 	glPopMatrix();
 
 	glPushMatrix();
@@ -163,12 +223,29 @@ void drawArm() {
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
 	//glTranslatef(-1.0*((ARM.endpt[0])[0]),-1.0*((ARM.endpt[0])[1]),-1.0*((ARM.endpt[0])[2]));
-	glRotatef(ARM.theta[3],1,0,0);
-	glRotatef(ARM.theta[4],0,1,0);
-	glRotatef(ARM.theta[5],0,0,1);
 	glTranslatef(((ARM.endpt[0])[0]),((ARM.endpt[0])[1]),((ARM.endpt[0])[2]));
+	// glRotatef(ARM.theta[5],0,0,1);
+	// glRotatef(ARM.theta[4],0,1,0);
+	// glRotatef(ARM.theta[3],1,0,0);
 	gluSphere(quad, radius, slices, stacks);
-	gluCylinder(quad, base, top, LEN2, slices, stacks);
+	// gluCylinder(quad, base, top, LEN2, slices, stacks);
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	seg = (endpt1 - endpt0);
+	axis_of_rotation = orig.cross(seg);
+	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
+	glTranslatef(endpt0[0], endpt0[1], endpt0[2]);
+	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
+	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
+
+
 	glPopMatrix();
 
 	glPushMatrix();
@@ -178,12 +255,28 @@ void drawArm() {
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
 	//glTranslatef(-1.0*((ARM.endpt[1])[0]),-1.0*((ARM.endpt[1])[1]),-1.0*((ARM.endpt[1])[2]));
-	glRotatef(ARM.theta[6],1,0,0);
-	glRotatef(ARM.theta[7],0,1,0);
-	glRotatef(ARM.theta[8],0,0,1);
 	glTranslatef(((ARM.endpt[1])[0]),((ARM.endpt[1])[1]),((ARM.endpt[1])[2]));
+	// glRotatef(ARM.theta[8],0,0,1);
+	// glRotatef(ARM.theta[7],0,1,0);
+	// glRotatef(ARM.theta[6],1,0,0);
 	gluSphere(quad, radius, slices, stacks);
-	gluCylinder(quad, base, top, LEN3, slices, stacks);
+	// gluCylinder(quad, base, top, LEN3, slices, stacks);
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	seg = (endpt2 - endpt1);
+	axis_of_rotation = orig.cross(seg);
+	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
+	glTranslatef(endpt1[0], endpt1[1], endpt1[2]);
+	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
+	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
+
+
 	glPopMatrix();
 
 	glPushMatrix();
@@ -193,12 +286,28 @@ void drawArm() {
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
 	//glTranslatef(-1.0*((ARM.endpt[2])[0]),-1.0*((ARM.endpt[2])[1]),-1.0*((ARM.endpt[2])[2]));
-	glRotatef(ARM.theta[9],1,0,0);
-	glRotatef(ARM.theta[10],0,1,0);
-	glRotatef(ARM.theta[11],0,0,1);
 	glTranslatef(((ARM.endpt[2])[0]),((ARM.endpt[2])[1]),((ARM.endpt[2])[2]));
+	// glRotatef(ARM.theta[11],0,0,1);
+	// glRotatef(ARM.theta[10],0,1,0);
+	// glRotatef(ARM.theta[9],1,0,0);
 	gluSphere(quad, radius, slices, stacks);
-	gluCylinder(quad, base, top, LEN4, slices, stacks);
+	// gluCylinder(quad, base, top, LEN4, slices, stacks);
+
+	glPopMatrix();
+
+	glPushMatrix();
+	glLoadIdentity();							// make sure transformation is "zero'd"
+	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+	seg = (endpt3 - endpt2);
+	axis_of_rotation = orig.cross(seg);
+	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
+	glTranslatef(endpt2[0], endpt2[1], endpt2[2]);
+	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
+	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
+
 	glPopMatrix();
 	
 	glPushMatrix();
@@ -210,6 +319,9 @@ void drawArm() {
 	glTranslatef(((ARM.endpt[3])[0]),((ARM.endpt[3])[1]),((ARM.endpt[3])[2]));
 	gluSphere(quad, 0.75, slices, stacks);
 	glPopMatrix();
+
+	ARM.theta = (PI/180.0)*ARM.theta;
+
 
 }
 
@@ -224,12 +336,14 @@ void drawSurface() {
 
 	currJ = ARM.computeJacobian();
 	ARM.updateArm(currJ,nextpt);
+	
 	drawArm();
 
 	t++;
-	if(t > 10){
-		t = 0;
-	}
+
+	// if(t > 10){
+	// 	t = 0;
+	// }
 }
 
 //****************************************************
@@ -297,10 +411,43 @@ void key_modes(unsigned char key, int x, int y){
 
 		// 'm' to step one frame
 		case 109:
+			cout << "---------------------------------------------------------------------" << endl;
+			cout << "THETA IN MAIN: " << ARM.theta.transpose()*(180.0/PI) << endl;
 			currJ = ARM.computeJacobian();
-			nextpt << 0.0, 0.1, 13.8;
+			nextpt << 0.0, 0.3, 13.6;
+			
+			cout << "Next Goal Point: " << nextpt.transpose() << endl;
+
 			ARM.updateArm(currJ,nextpt);
+
+			// while(1){
+			// 	if(ARM.updateArm(currJ,nextpt)){
+			// 		break;
+			// 	}
+			// }
+			cout << "THETA IN MAIN after update: " << ARM.theta.transpose()*(180.0/PI) << endl;
 			drawArm();
+			t++;
+			break;
+
+		case 107:
+			cout << "---------------------------------------------------------------------" << endl;
+			cout << "THETA IN MAIN: " << ARM.theta.transpose()*(180.0/PI) << endl;
+			currJ = ARM.computeJacobian();
+			nextpt << 0.0, 0.6, 13.3;
+			
+			cout << "Next Goal Point: " << nextpt.transpose() << endl;
+
+			ARM.updateArm(currJ,nextpt);
+
+			// while(1){
+			// 	if(ARM.updateArm(currJ,nextpt)){
+			// 		break;
+			// 	}
+			// }
+			cout << "THETA IN MAIN after update: " << ARM.theta.transpose()*(180.0/PI) << endl;
+			drawArm();
+			t++;
 			break;
 	
 	 	// space bar

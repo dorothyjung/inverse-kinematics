@@ -9,6 +9,9 @@
 #include <Eigen/Dense>
 #include <Eigen/SVD>
 
+#define PI 3.14159265  // Should be used from mathlib
+#define EPS 0.001
+
 using namespace std;
 using namespace Eigen;
 
@@ -38,7 +41,7 @@ class Arm {
 	Arm(Eigen::VectorXf);
 	
 	Eigen::MatrixXf computeJacobian();
-	void updateArm(MatrixXf, Vector3f);
+	bool updateArm(MatrixXf, Vector3f);
 
 	Eigen::VectorXf theta;
 	vector<Eigen::Vector3f> endpt;
