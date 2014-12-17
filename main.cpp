@@ -238,6 +238,17 @@ void drawArm() {
     glVertex3f(-1000.0f,-1000.0f,0.0f);
 	glEnd();
 
+	int MAX = 100;
+	glLineWidth(3.0);
+	glBegin(GL_LINE_LOOP);
+	
+	for(int i = 0; i < MAX; i++){
+		float step = (i*2*PI)/MAX;
+		float r = 5*(2 + cos(2*(step))); 
+		glVertex3f(r*cos(step),r*sin(step),10+4*cos(step));
+	}
+	glEnd();
+
 	gluSphere(quad, radius, slices, stacks);	// draw base
 	glPopMatrix();
 
@@ -250,8 +261,6 @@ void drawArm() {
 // function that recalculates Jacobian
 //***************************************************
 void drawSurface() {
-
-
 
 	float step = 0.005*t;
 	float r = 5*(2 + cos(2*(step))); 
@@ -287,7 +296,7 @@ void myDisplay() {
 	gluPerspective(60, viewport.w/viewport.h, 1, FLT_MAX);
 
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);			// clear the color buffer
-	gluLookAt(0, 0, 30, 0, 0, 0, 0, 1, 0);
+	gluLookAt(0, 0, 40, 0, 0, 0, 0, 1, 0);
 	// gluLookAt(0, 0, 2*bb_max*sqrt(3)+z_trans, 0, 0, 0, 0, 1, 0);
 
 	glMatrixMode(GL_MODELVIEW);			        // indicate we are specifying camera transformations
