@@ -242,10 +242,19 @@ void drawArm() {
 	glLineWidth(3.0);
 	glBegin(GL_LINE_LOOP);
 	
+	// // Loop 1
+	// for(int i = 0; i < MAX; i++){
+	// 	float step = (i*2*PI)/MAX;
+	// 	float r = 5*(2 + cos(2*(step))); 
+	// 	glVertex3f(r*cos(step),r*sin(step),10+4*cos(step));
+	// }
+	// glEnd();
+
+	// Loop 2
 	for(int i = 0; i < MAX; i++){
 		float step = (i*2*PI)/MAX;
-		float r = 5*(2 + cos(2*(step))); 
-		glVertex3f(r*cos(step),r*sin(step),10+4*cos(step));
+		float r = 13*sin(5*(step)); 
+		glVertex3f(r*cos(step),r*sin(step),8);
 	}
 	glEnd();
 
@@ -262,11 +271,15 @@ void drawArm() {
 //***************************************************
 void drawSurface() {
 
+	//http://cims.nyu.edu/~kiryl/Precalculus/Section_8.2-Graphs%20of%20Polar%20Equations/Graphs%20of%20Polar%20Equations.pdf
+
 	float step = 0.005*t;
-	float r = 5*(2 + cos(2*(step))); 
+	//float r = 5*(2 + cos(2*(step)));
+	float r = 13*sin(5*(step)); 
 	float x = r*cos(step);
 	float y = r*sin(step);
-	float z = 10 + 4*cos(step);
+	float z = 8.0;
+	//float z = 10 + 4*cos(step);
 
 	nextpt << x, y, z;
 	if(nextpt.norm() > 14.0){
