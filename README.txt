@@ -14,4 +14,8 @@ Platform: Mac OS X
 
 Location: cs184-el (Mac OS X)
 
-Extra Credit:
+Notes:
+	-used polar coordinate functions to draw goal path 	(lemniscate, 5-petal rose)
+	http://cims.nyu.edu/~kiryl/Precalculus/Section_8.2-Graphs%20of%20Polar%20Equations/Graphs%20of%20Polar%20Equations.pdf
+
+	-video at http://inst.eecs.berkeley.edu/~cs184-eu/assignments/assignment4.html
