@@ -242,7 +242,7 @@ void drawArm() {
 	glLineWidth(3.0);
 	glBegin(GL_LINE_LOOP);
 	
-	// // Loop 1
+	// // Loop 1: Lemniscate
 	// for(int i = 0; i < MAX; i++){
 	// 	float step = (i*2*PI)/MAX;
 	// 	float r = 5*(2 + cos(2*(step))); 
@@ -250,7 +250,7 @@ void drawArm() {
 	// }
 	// glEnd();
 
-	// Loop 2
+	// Loop 2: Rose
 	for(int i = 0; i < MAX; i++){
 		float step = (i*2*PI)/MAX;
 		float r = 13*sin(5*(step)); 
@@ -273,13 +273,19 @@ void drawSurface() {
 
 	//http://cims.nyu.edu/~kiryl/Precalculus/Section_8.2-Graphs%20of%20Polar%20Equations/Graphs%20of%20Polar%20Equations.pdf
 
+	// // Loop 1: Lemniscate
+	// float step = 0.005*t;
+	// float r = 5*(2 + cos(2*(step)));
+	// float x = r*cos(step);
+	// float y = r*sin(step);
+	// float z = 10 + 4*cos(step);
+
+	// Loop 2: Rose
 	float step = 0.005*t;
-	//float r = 5*(2 + cos(2*(step)));
 	float r = 13*sin(5*(step)); 
 	float x = r*cos(step);
 	float y = r*sin(step);
 	float z = 8.0;
-	//float z = 10 + 4*cos(step);
 
 	nextpt << x, y, z;
 	if(nextpt.norm() > 14.0){
