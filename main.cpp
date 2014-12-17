@@ -66,8 +66,6 @@ float z_max = -1*FLT_MAX;
 
 Arm ARM;
 int t = 1;
-float y = 0.0;
-float z = 0.0;
 bool animate = 0;
 MatrixXf currJ;
 Vector3f nextpt;
@@ -123,37 +121,109 @@ void myReshape(int w, int h) {
 }
 
 //****************************************************
+// draw joints using spheres
+//***************************************************
+void drawJoints() {
+
+	//create quadric for use in spheres, cylinders
+	GLUquadric* quad = gluNewQuadric();
+	gluQuadricNormals(quad, GLU_SMOOTH);
+	gluQuadricTexture(quad, GL_TRUE);
+
+	//define parameters for spheres, cylinders
+	int slices = 20;
+	int stacks = 20;
+	float radius = 1.0f;
+	float base = 0.5f;
+	float top = 0.5f;
+
+	int i;
+	for (i=0; i<ARM.endpt.size(); i++) {
+
+		glPushMatrix();
+		glLoadIdentity();							// make sure transformation is "zero'd"
+		glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+		glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+		glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+		glTranslatef(ARM.endpt[i][0], ARM.endpt[i][1], ARM.endpt[i][2]);
+
+		if (i == 3) {
+			radius = 0.75f;
+		}
+
+		gluSphere(quad, radius, slices, stacks);
+		glPopMatrix();
+
+	}
+
+}
+
+//****************************************************
+// draw arm segments using cylinders
+//***************************************************
+void drawArmSegments() {
+
+	//create quadric for use in spheres, cylinders
+	GLUquadric* quad = gluNewQuadric();
+	gluQuadricNormals(quad, GLU_SMOOTH);
+	gluQuadricTexture(quad, GL_TRUE);
+
+	//define parameters for spheres, cylinders
+	int slices = 20;
+	int stacks = 20;
+	float radius = 1.0f;
+	float base = 0.5f;
+	float top = 0.5f;
+
+	Vector3f orig(0.0, 0.0, 1.0);				// default orientation in opengl
+	Vector3f bot(0.0, 0.0, 0.0);				// base of arm at origin
+	Vector3f prev;
+	Vector3f seg;								// used to find rotate axis, diff btwn endptA - endptB
+	Vector3f axis_of_rotation;
+	float deg_rotate = 0.0f;					// degrees to rotate by (in degrees)
+
+	int i;
+	for (i=0; i<ARM.endpt.size(); i++) {
+
+		glPushMatrix();
+		glLoadIdentity();							// make sure transformation is "zero'd"
+		glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
+		glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
+		glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
+
+		if (i == 0) {
+			prev = bot;
+		}
+
+		seg = (ARM.endpt[i] - prev);
+		axis_of_rotation = orig.cross(seg);
+		deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
+		glTranslatef(prev[0], prev[1], prev[2]);
+		glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
+		gluCylinder(quad, base, top, seg.norm(), slices, stacks);
+		glPopMatrix();
+
+		prev = ARM.endpt[i];
+	}
+}
+
+//****************************************************
 // calls functions to draw current arm configuration
 //***************************************************
 void drawArm() {
 
-	ARM.theta = (180.0/PI)*ARM.theta;
-	//cout << "THETA IN MAIN 2: " << ARM.theta.transpose() << endl;
+	//create quadric for use in spheres, cylinders
+	GLUquadric* quad = gluNewQuadric();
+	gluQuadricNormals(quad, GLU_SMOOTH);
+	gluQuadricTexture(quad, GL_TRUE);
 
-	// glBegin(GL_LINES);
-	// glLineWidth(1.0f);
-	// glVertex3f(0.0, 0.0, 0.0);
-	// glVertex3f(ARM.endpt[0][0], ARM.endpt[0][1], ARM.endpt[0][2]);
-	// glEnd();
-
-	// glBegin(GL_LINES);
-	// glLineWidth(1.0f);
-	// glVertex3f(ARM.endpt[0][0], ARM.endpt[0][1], ARM.endpt[0][2]);
-	// glVertex3f(ARM.endpt[1][0], ARM.endpt[1][1], ARM.endpt[1][2]);
-	// glEnd();
-
-	// glBegin(GL_LINES);
-	// glLineWidth(1.0f);
-	// glVertex3f(ARM.endpt[1][0], ARM.endpt[1][1], ARM.endpt[1][2]);
-	// glVertex3f(ARM.endpt[2][0], ARM.endpt[2][1], ARM.endpt[2][2]);
-	// glEnd();
-
-	// glBegin(GL_LINES);
-	// glLineWidth(1.0f);
-	// glVertex3f(ARM.endpt[2][0], ARM.endpt[2][1], ARM.endpt[2][2]);
-	// glVertex3f(ARM.endpt[3][0], ARM.endpt[3][1], ARM.endpt[3][2]);
-	// glEnd();
-
+	//define parameters for spheres, cylinders
+	int slices = 20;
+	int stacks = 20;
+	float radius = 1.0f;
+	float base = 0.5f;
+	float top = 0.5f;
 
 	glPushMatrix();
 	glLoadIdentity();							// make sure transformation is "zero'd"
@@ -168,160 +238,11 @@ void drawArm() {
     glVertex3f(-1000.0f,-1000.0f,0.0f);
 	glEnd();
 
-	GLUquadric* quad = gluNewQuadric();
-	gluQuadricNormals(quad, GLU_SMOOTH);
-	gluQuadricTexture(quad, GL_TRUE);
-
-	int slices = 20;
-	int stacks = 20;
-	float radius = 1.0f;
-	float base = 0.5f;
-	float top = 0.5f;
-
-	gluSphere(quad, radius, slices, stacks);
-	// glRotatef(ARM.theta[2],0,0,1);
-	// glRotatef(ARM.theta[1],0,1,0);
-	// glRotatef(ARM.theta[0],1,0,0);
-	// gluCylinder(quad, base, top, LEN1, slices, stacks);
-
-	// Vector3f endpt0(ARM.endpt[0][0], ARM.endpt[0][1], ARM.endpt[0][2]);
-	// Vector3f endpt1(ARM.endpt[1][0], ARM.endpt[1][1], ARM.endpt[1][2]);
-	// Vector3f endpt2(ARM.endpt[2][0], ARM.endpt[2][1], ARM.endpt[2][2]);
-	// Vector3f endpt3(ARM.endpt[3][0], ARM.endpt[3][1], ARM.endpt[3][2]);
-
-	Vector3f orig(0.0, 0.0, 1.0);
-	Vector3f bot(0.0, 0.0, 0.0);
-	Vector3f endpt0 = ARM.endpt[0];
-	Vector3f endpt1 = ARM.endpt[1];
-	Vector3f endpt2 = ARM.endpt[2];
-	Vector3f endpt3 = ARM.endpt[3];
-	Vector3f seg(0.0, 0.0, 0.0);
-	Vector3f axis_of_rotation(0.0, 0.0, 0.0);
-	float deg_rotate = 0.0f;
-
+	gluSphere(quad, radius, slices, stacks);	// draw base
 	glPopMatrix();
 
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	seg = (endpt0 - bot);
-	axis_of_rotation = orig.cross(seg);
-	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
-	glTranslatef(bot[0], bot[1], bot[2]);
-	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
-	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
-
-	glPopMatrix();
-
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	//glTranslatef(-1.0*((ARM.endpt[0])[0]),-1.0*((ARM.endpt[0])[1]),-1.0*((ARM.endpt[0])[2]));
-	glTranslatef(((ARM.endpt[0])[0]),((ARM.endpt[0])[1]),((ARM.endpt[0])[2]));
-	// glRotatef(ARM.theta[5],0,0,1);
-	// glRotatef(ARM.theta[4],0,1,0);
-	// glRotatef(ARM.theta[3],1,0,0);
-	gluSphere(quad, radius, slices, stacks);
-	// gluCylinder(quad, base, top, LEN2, slices, stacks);
-
-	glPopMatrix();
-
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	seg = (endpt1 - endpt0);
-	axis_of_rotation = orig.cross(seg);
-	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
-	glTranslatef(endpt0[0], endpt0[1], endpt0[2]);
-	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
-	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
-
-
-	glPopMatrix();
-
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	//glTranslatef(-1.0*((ARM.endpt[1])[0]),-1.0*((ARM.endpt[1])[1]),-1.0*((ARM.endpt[1])[2]));
-	glTranslatef(((ARM.endpt[1])[0]),((ARM.endpt[1])[1]),((ARM.endpt[1])[2]));
-	// glRotatef(ARM.theta[8],0,0,1);
-	// glRotatef(ARM.theta[7],0,1,0);
-	// glRotatef(ARM.theta[6],1,0,0);
-	gluSphere(quad, radius, slices, stacks);
-	// gluCylinder(quad, base, top, LEN3, slices, stacks);
-	glPopMatrix();
-
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	seg = (endpt2 - endpt1);
-	axis_of_rotation = orig.cross(seg);
-	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
-	glTranslatef(endpt1[0], endpt1[1], endpt1[2]);
-	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
-	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
-
-
-	glPopMatrix();
-
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	//glTranslatef(-1.0*((ARM.endpt[2])[0]),-1.0*((ARM.endpt[2])[1]),-1.0*((ARM.endpt[2])[2]));
-	glTranslatef(((ARM.endpt[2])[0]),((ARM.endpt[2])[1]),((ARM.endpt[2])[2]));
-	// glRotatef(ARM.theta[11],0,0,1);
-	// glRotatef(ARM.theta[10],0,1,0);
-	// glRotatef(ARM.theta[9],1,0,0);
-	gluSphere(quad, radius, slices, stacks);
-	// gluCylinder(quad, base, top, LEN4, slices, stacks);
-
-	glPopMatrix();
-
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	seg = (endpt3 - endpt2);
-	axis_of_rotation = orig.cross(seg);
-	deg_rotate = (180/PI)*acos(orig.dot(seg) / seg.norm());
-	glTranslatef(endpt2[0], endpt2[1], endpt2[2]);
-	glRotatef(deg_rotate, axis_of_rotation[0], axis_of_rotation[1], axis_of_rotation[2]);
-	gluCylinder(quad, base, top, seg.norm(), slices, stacks);
-
-	glPopMatrix();
-	
-	glPushMatrix();
-	glLoadIdentity();							// make sure transformation is "zero'd"
-	glTranslatef(x_trans, y_trans, 0);			// handle translations from arrow keys
-	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
-	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
-
-	glTranslatef(((ARM.endpt[3])[0]),((ARM.endpt[3])[1]),((ARM.endpt[3])[2]));
-	gluSphere(quad, 0.75, slices, stacks);
-	glPopMatrix();
-
-	ARM.theta = (PI/180.0)*ARM.theta;
-
+	drawArmSegments();							// draw arm segments
+	drawJoints();								// draw joints
 
 }
 
@@ -330,20 +251,28 @@ void drawArm() {
 //***************************************************
 void drawSurface() {
 
-	y = t*0.1f;
-	z = floor(sqrt(sqr(14.0)-sqr(y)));
-	nextpt << 0.0, y, z;
+
+
+	float step = 0.005*t;
+	float r = 5*(2 + cos(2*(step))); 
+	float x = r*cos(step);
+	float y = r*sin(step);
+	float z = 10 + 4*cos(step);
+
+	nextpt << x, y, z;
+	if(nextpt.norm() > 14.0){
+		nextpt = (13.9/nextpt.norm())*nextpt;
+	}
 
 	currJ = ARM.computeJacobian();
-	ARM.updateArm(currJ,nextpt);
+	//while((ARM.endpt[3]-nextpt).norm() > EPS){
+		ARM.updateArm(currJ,nextpt);
+	//}
 	
 	drawArm();
 
 	t++;
 
-	// if(t > 10){
-	// 	t = 0;
-	// }
 }
 
 //****************************************************
