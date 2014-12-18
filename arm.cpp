@@ -95,12 +95,12 @@ MatrixXf Arm::computeJacobian(){
 				dpdx1[1], dpdy1[1], dpdz1[1], dpdx2[1], dpdy2[1], dpdz2[1], dpdx3[1], dpdy3[1], dpdz3[1], dpdx4[1], dpdy4[1], dpdz4[1],
 				dpdx1[2], dpdy1[2], dpdz1[2], dpdx2[2], dpdy2[2], dpdz2[2], dpdx3[2], dpdy3[2], dpdz3[2], dpdx4[2], dpdy4[2], dpdz4[2];
 
-	cout << "End point1:" << endpt[0].transpose() << endl;
-	cout << "End point2:" << endpt[1].transpose() << endl;
-	cout << "End point3:" << endpt[2].transpose() << endl;
-	cout << "End point4:" << endpt[3].transpose() << endl;
-	cout << "Jacobian:" << endl;
-	cout << jacobian << endl;
+	// cout << "End point1:" << endpt[0].transpose() << endl;
+	// cout << "End point2:" << endpt[1].transpose() << endl;
+	// cout << "End point3:" << endpt[2].transpose() << endl;
+	// cout << "End point4:" << endpt[3].transpose() << endl;
+	// cout << "Jacobian:" << endl;
+	// cout << jacobian << endl;
 	return jacobian;
 
 }
@@ -113,13 +113,13 @@ bool Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 	float dt;
 
 	Vector3f dp = goal - endpt[3];
-	cout << "dp: " << dp.transpose() << endl;
+	// cout << "dp: " << dp.transpose() << endl;
 
 	JacobiSVD<MatrixXf> svd(jacobian, ComputeThinU | ComputeThinV);
 	VectorXf dtheta = svd.solve(dp); //FIX vector dp
 	theta = theta + dtheta;
-	cout << "theta: " << theta.transpose()*(180.0/PI) << endl;
-	cout << "dtheta: " << dtheta.transpose()*(180.0/PI) << endl;
+	// cout << "theta: " << theta.transpose()*(180.0/PI) << endl;
+	// cout << "dtheta: " << dtheta.transpose()*(180.0/PI) << endl;
 	
 	// Update first segment
 	dt = dtheta[0];
@@ -138,7 +138,7 @@ bool Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 			0.0,		0.0,		1.0;
 
 	Vector3f nv1 = (rz*ry*rx)*endpt[0];
-	cout << "New endpt 1: " << nv1.transpose() << endl; 
+	// cout << "New endpt 1: " << nv1.transpose() << endl; 
 
 	// Update second segment
 	dt = dtheta[3];
@@ -157,7 +157,7 @@ bool Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 			0.0,		0.0,		1.0;
 
 	Vector3f nv2 = (rz*ry*rx)*(endpt[1]-endpt[0])+nv1; 
-	cout << "New endpt 2: " << nv2.transpose() << endl; 
+	// cout << "New endpt 2: " << nv2.transpose() << endl; 
 
 	// Update third segment
 	dt = dtheta[6];
@@ -176,7 +176,7 @@ bool Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 			0.0,		0.0,		1.0;
 
 	Vector3f nv3 = (rz*ry*rx)*(endpt[2]-endpt[1])+nv2; 
-	cout << "New endpt 3: " << nv3.transpose() << endl; 
+	// cout << "New endpt 3: " << nv3.transpose() << endl; 
 
 	// Update fourth segment
 	dt = dtheta[9];
@@ -195,7 +195,7 @@ bool Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 			0.0,		0.0,		1.0;
 
 	Vector3f nv4 = (rz*ry*rx)*(endpt[3]-endpt[2])+nv3;
-	cout << "New endpt 4: " << nv4.transpose() << endl; 
+	// cout << "New endpt 4: " << nv4.transpose() << endl; 
 
 	endpt.clear();
 	endpt.push_back(nv1);
@@ -203,13 +203,6 @@ bool Arm::updateArm(MatrixXf jacobian, Vector3f goal){
 	endpt.push_back(nv3);
 	endpt.push_back(nv4); 
 
-	cout << "NORM: " << (nv4-goal).norm() << endl;
+	// cout << "NORM: " << (nv4-goal).norm() << endl;
 
-	// if((nv4-goal).norm() < EPS){
-	// 	// Update theta vector in state
-	// 	theta = theta + dtheta;
-	// 	return true;
-	// } else{
-	// 	return false;
-	// }
 }

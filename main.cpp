@@ -231,12 +231,12 @@ void drawArm() {
 	glRotatef(phi, 1, 0, 0);					// handle rotations about x axis
 	glRotatef(theta, 0, 1, 0);					// handle azimuthal rotations
 
-	glBegin(GL_POLYGON);						// draw ground
-	glVertex3f(-1000.0f,1000.0f,0.0f);
-    glVertex3f(1000.0f,1000.0f,0.0f);
-    glVertex3f(1000.0f,-1000.0f,0.0f);
-    glVertex3f(-1000.0f,-1000.0f,0.0f);
-	glEnd();
+	// glBegin(GL_POLYGON);						// draw ground
+	// glVertex3f(-1000.0f,1000.0f,0.0f);
+ 	// glVertex3f(1000.0f,1000.0f,0.0f);
+ 	// glVertex3f(1000.0f,-1000.0f,0.0f);
+ 	// glVertex3f(-1000.0f,-1000.0f,0.0f);
+	// glEnd();
 
 	int MAX = 100;
 	glLineWidth(3.0);
@@ -248,16 +248,25 @@ void drawArm() {
 	// 	float r = 5*(2 + cos(2*(step))); 
 	// 	glVertex3f(r*cos(step),r*sin(step),10+4*cos(step));
 	// }
-	// glEnd();
+	
 
-	// Loop 2: Rose
-	for(int i = 0; i < MAX; i++){
+	// // Loop 2: Rose
+	// for(int i = 0; i < MAX; i++){
+	// 	float step = (i*2*PI)/MAX;
+	// 	float r = 13*sin(5*(step)); 
+	// 	glVertex3f(r*cos(step),r*sin(step),8);
+	// }
+
+	// Loop 3: Limacon
+	for(int i = 1; i < MAX; i++){
 		float step = (i*2*PI)/MAX;
-		float r = 13*sin(5*(step)); 
-		glVertex3f(r*cos(step),r*sin(step),8);
+		float r = 4 + 8*cos(step); 
+		float z = 6 - 6*cos(3*step);
+		glVertex3f(r*cos(step),r*sin(step),z);	
 	}
-	glEnd();
 
+	glEnd();
+	
 	gluSphere(quad, radius, slices, stacks);	// draw base
 	glPopMatrix();
 
@@ -280,16 +289,23 @@ void drawSurface() {
 	// float y = r*sin(step);
 	// float z = 10 + 4*cos(step);
 
-	// Loop 2: Rose
+	// // Loop 2: Rose
+	// float step = 0.005*t;
+	// float r = 13*sin(5*(step)); 
+	// float x = r*cos(step);
+	// float y = r*sin(step);
+	// float z = 8.0;
+
+	// Loop 3: Limacon
 	float step = 0.005*t;
-	float r = 13*sin(5*(step)); 
+	float r = 4 + 8*cos(step); 
 	float x = r*cos(step);
 	float y = r*sin(step);
-	float z = 8.0;
+	float z = 6 - 6*cos(3*step);
 
 	nextpt << x, y, z;
 	if(nextpt.norm() > 14.0){
-		nextpt = (13.9/nextpt.norm())*nextpt;
+		nextpt = (13.95/nextpt.norm())*nextpt;
 	}
 
 	currJ = ARM.computeJacobian();

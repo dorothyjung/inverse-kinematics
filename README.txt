@@ -15,6 +15,8 @@ Platform: Mac OS X
 Location: cs184-el (Mac OS X)
 
 Notes:
+	- Run 'make', then './as4'. Once viewing window opens, press 'n' to start animation	
+	
 	-used polar coordinate functions to draw goal path 	(lemniscate, 5-petal rose)
 	http://cims.nyu.edu/~kiryl/Precalculus/Section_8.2-Graphs%20of%20Polar%20Equations/Graphs%20of%20Polar%20Equations.pdf
 
