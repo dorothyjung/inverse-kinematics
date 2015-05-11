@@ -34,9 +34,10 @@
 #include <stdlib.h>
 
 #include "arm.h"
-//#include "path.h"
 
-//#define PI 3.14159265  // Should be used from mathlib
+#define LEMNISCATE 1
+#define FLOWER 2
+#define LIMACON 3
 
 inline float sqr(float x) { return x*x; }
 using namespace std;
@@ -69,6 +70,8 @@ int t = 1;
 bool animate = 0;
 MatrixXf currJ;
 Vector3f nextpt;
+
+int shape = LEMNISCATE;
 
 
 
@@ -242,27 +245,34 @@ void drawArm() {
 	glLineWidth(3.0);
 	glBegin(GL_LINE_LOOP);
 	
-	// // Loop 1: Lemniscate
-	// for(int i = 0; i < MAX; i++){
-	// 	float step = (i*2*PI)/MAX;
-	// 	float r = 5*(2 + cos(2*(step))); 
-	// 	glVertex3f(r*cos(step),r*sin(step),10+4*cos(step));
-	// }
-	
+	switch(shape) {
+		case LEMNISCATE:
+			// Loop 1: Lemniscate
+			for(int i = 0; i < MAX; i++){
+				float step = (i*2*PI)/MAX;
+				float r = 5*(2 + cos(2*(step))); 
+				glVertex3f(r*cos(step),r*sin(step),10+4*cos(step));
+			}
+			break;
 
-	// // Loop 2: Rose
-	// for(int i = 0; i < MAX; i++){
-	// 	float step = (i*2*PI)/MAX;
-	// 	float r = 13*sin(5*(step)); 
-	// 	glVertex3f(r*cos(step),r*sin(step),8);
-	// }
+		case FLOWER:
+			// Loop 2: Rose
+			for(int i = 0; i < MAX; i++){
+				float step = (i*2*PI)/MAX;
+				float r = 13*sin(5*(step)); 
+				glVertex3f(r*cos(step),r*sin(step),8);
+			}
+			break;
 
-	// Loop 3: Limacon
-	for(int i = 1; i < MAX; i++){
-		float step = (i*2*PI)/MAX;
-		float r = 4 + 8*cos(step); 
-		float z = 6 - 6*cos(3*step);
-		glVertex3f(r*cos(step),r*sin(step),z);	
+		case LIMACON:
+			// Loop 3: Limacon
+			for(int i = 1; i < MAX; i++){
+				float step = (i*2*PI)/MAX;
+				float r = 4 + 8*cos(step); 
+				float z = 6 - 6*cos(3*step);
+				glVertex3f(r*cos(step),r*sin(step),z);	
+			}
+			break;
 	}
 
 	glEnd();
@@ -282,26 +292,36 @@ void drawSurface() {
 
 	//http://cims.nyu.edu/~kiryl/Precalculus/Section_8.2-Graphs%20of%20Polar%20Equations/Graphs%20of%20Polar%20Equations.pdf
 
-	// // Loop 1: Lemniscate
-	// float step = 0.005*t;
-	// float r = 5*(2 + cos(2*(step)));
-	// float x = r*cos(step);
-	// float y = r*sin(step);
-	// float z = 10 + 4*cos(step);
+	float step, r, x, y, z;
 
-	// // Loop 2: Rose
-	// float step = 0.005*t;
-	// float r = 13*sin(5*(step)); 
-	// float x = r*cos(step);
-	// float y = r*sin(step);
-	// float z = 8.0;
+	switch(shape) {
+		case LEMNISCATE:
+			// Loop 1: Lemniscate
+			step = 0.005*t;
+			r = 5*(2 + cos(2*(step)));
+			x = r*cos(step);
+			y = r*sin(step);
+			z = 10 + 4*cos(step);
+			break;
 
-	// Loop 3: Limacon
-	float step = 0.005*t;
-	float r = 4 + 8*cos(step); 
-	float x = r*cos(step);
-	float y = r*sin(step);
-	float z = 6 - 6*cos(3*step);
+		case FLOWER:
+			// Loop 2: Rose
+			step = 0.005*t;
+			r = 13*sin(5*(step)); 
+			x = r*cos(step);
+			y = r*sin(step);
+			z = 8.0;
+			break;
+
+		case LIMACON:
+			// Loop 3: Limacon
+			step = 0.005*t;
+			r = 4 + 8*cos(step); 
+			x = r*cos(step);
+			y = r*sin(step);
+			z = 6 - 6*cos(3*step);
+			break;
+	}
 
 	nextpt << x, y, z;
 	if(nextpt.norm() > 14.0){
@@ -382,14 +402,29 @@ void key_modes(unsigned char key, int x, int y){
 			}
 			break;
 
+		// 'j' is pressed 106 lemniscate
+		case 106:
+			shape = LEMNISCATE;
+			break;
+
+		// 'k' is pressed 107 flower
+		case 107:
+			shape = FLOWER;
+			break;
+
+		// 'l' is pressed 108 limacon
+		case 108:
+			shape = LIMACON;
+			break;
+
 		// 'm' to step one frame
 		case 109:
-			cout << "---------------------------------------------------------------------" << endl;
-			cout << "THETA IN MAIN: " << ARM.theta.transpose()*(180.0/PI) << endl;
+			// cout << "---------------------------------------------------------------------" << endl;
+			// cout << "THETA IN MAIN: " << ARM.theta.transpose()*(180.0/PI) << endl;
 			currJ = ARM.computeJacobian();
 			nextpt << 0.0, 0.3, 13.6;
 			
-			cout << "Next Goal Point: " << nextpt.transpose() << endl;
+			// cout << "Next Goal Point: " << nextpt.transpose() << endl;
 
 			ARM.updateArm(currJ,nextpt);
 
@@ -398,27 +433,7 @@ void key_modes(unsigned char key, int x, int y){
 			// 		break;
 			// 	}
 			// }
-			cout << "THETA IN MAIN after update: " << ARM.theta.transpose()*(180.0/PI) << endl;
-			drawArm();
-			t++;
-			break;
-
-		case 107:
-			cout << "---------------------------------------------------------------------" << endl;
-			cout << "THETA IN MAIN: " << ARM.theta.transpose()*(180.0/PI) << endl;
-			currJ = ARM.computeJacobian();
-			nextpt << 0.0, 0.6, 13.3;
-			
-			cout << "Next Goal Point: " << nextpt.transpose() << endl;
-
-			ARM.updateArm(currJ,nextpt);
-
-			// while(1){
-			// 	if(ARM.updateArm(currJ,nextpt)){
-			// 		break;
-			// 	}
-			// }
-			cout << "THETA IN MAIN after update: " << ARM.theta.transpose()*(180.0/PI) << endl;
+			// cout << "THETA IN MAIN after update: " << ARM.theta.transpose()*(180.0/PI) << endl;
 			drawArm();
 			t++;
 			break;
